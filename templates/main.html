@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+
+    <!-- cookie is not a function -->
+    <script type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
+    <!-- google 폰트 -->
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+
+    <!-- Talewind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <title>WEEK0 | 기온별옷차림</title>
+
+    <style>
+        * {
+            font-family: 'Jua', sans-serif;
+        }
+
+       
+
+        #left {
+            margin: 10px auto 30px auto;
+            width: 500px;
+            height: 500px;
+            padding: 25px;
+        }
+
+        #center {
+            margin: 10px auto 30px auto;
+            width: 500px;
+            height: 500px;
+            padding: 25px;
+        }
+
+        #right {
+            margin: 10px auto 30px auto;
+            width: 500px;
+            height: 500px;
+            padding: 25px;
+        }
+
+        .posting-box {
+            margin: 10px auto 30px auto;
+            width: 500px;
+
+            border: 3px solid black;
+            border-radius: 5px;
+
+            padding: 25px;
+        }
+
+    </style>
+
+    <script>
+        $(document).ready(function () {
+            $('#post-box').hide();
+            showPost();
+
+        });
+
+        function openclose() {
+            let status = $('#post-box').css('display')
+            if (status == 'block') {
+                $('#post-box').hide()
+                $('#posting-box-btn').text('포스팅박스 열기')
+            } else {
+                $('#post-box').show()
+                $('#posting-box-btn').text('포스팅박스 닫기')
+            }
+        }
+
+        function postcard() {
+            let text = $("#input-text").val();
+            
+
+            $.ajax({
+                type: "POST",
+                url: "/post",
+                data: {text_give: text},
+                success: function (response) {
+                    if (response['result'] == 'success') {
+                        alert('포스팅 완료!');
+                        window.location.reload();
+                    } else {
+                        alert("서버 오류!")
+                    }
+                }
+            })
+        }
+
+        function showPost() {
+            $.ajax({
+                type: "GET",
+                url: "/post",
+                processData: false,
+                contentType: false,
+                data: {},
+                success: function (response) {
+                    let postings = response["postings"];
+                    for (let i = 0; i < postings.length; i++) {
+                        makeCard(postings[i]["text"], postings[i]["like"])
+                    }
+                }
+            })
+        }
+
+        function makeCard(text,like) {
+            let temp_html =
+                `<div class="card">
+                            <p class="card-text comment" >${text}</p>
+                    <button id="likebutton" type="button" onclick="addlike()"><img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRKz5cQaB3S0W84fK4oeo3nztm-7CUEtdLgKA&usqp=CAU" alt="좋아요"></button>
+                    <div> (좋아요: ${like})</div>
+                    </div>`;
+
+            $('#cards-box').append(temp_html);
+        } 
+        function addlike() {
+           
+        //    $.ajax({
+        //             type: 'POST',
+        //             url: '/api/like',
+        //             data: {},
+        //             success: function (response) {
+        //                 if (response['result'] == 'success') {
+        //                     let msg = response['msg'];
+        //                     alert(msg);
+        //                 }
+        //             }
+        //         });
+        }
+
+        function logout() {
+            $.removeCookie('mytoken', { path: '/' });
+            window.location.href = '/';
+        }
+    </script>
+</head>
+
+<body>
+    
+        <div class="bg-gray-100 p-4">
+            <div class="bg-gray-100 p-4">
+                <div class="bg-white border rounded-sm">
+                    <div class="flex gap-10 items-center ml-80 px-4 py-4">
+                        <span class=" pl-40 text-7xl font-semibold antialiased block leading-tight">{{temp1}}℃</span>
+                        <span class="text-4xl block">체감({{temp2}}℃)</span>
+                        <button id="posting-box-btn" onclick="openclose()" class="btn btn-primary btn-lg">포스팅박스
+                            열기</button>
+                            
+                             
+                                
+
+                                
+                                
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- posting box -->
+        <div class="posting-box" id="post-box">
+            <div class="form-group">
+                <label for="client-comment">데일리룩 자랑하기!</label>
+                <div>
+                    <input id="input-text" type="text" class="form-control" placeholder="">
+                </div>
+            
+                <br>
+                <button class="btn btn-secondary" onclick="postcard()">공유하기</button>
+            </div>
+        </div>
+
+        <!-- 부트스트랩 카드 컬럼 -->
+        <div class="columns-3">
+            <img class="cardigan" id="left"
+                src="https://static.massimodutti.net/3/photos/2022/I/0/1/p/5663/625/730/5663625730_1_1_3.jpg?t=1653490326144">
+            <img class="MTM" id="center"
+                src="https://image.msscdn.net/images/goods_img/20210809/2052957/2052957_2_500.jpg">
+            <img class="Hood" id="right"
+                src="https://d1jmf3qg5eaacj.cloudfront.net/item_desc/web/ITEMT5CXIG2/huf04R71599453044920.JPEG">
+        </div>
+
+        <hr>
+
+
+        <!-- posting card -->
+        <div id="cards-box" class="card-columns">
+</div>
+        <div>
+            <input type="button" onclick="logout()" value="로그아웃"
+                class="block w-full bg-indigo-600 mt-5 py-2 rounded-2xl hover:bg-indigo-700 hover:-translate-y-1 transition-all duration-500 text-white font-semibold mb-2">
+        </div>
+    
+</body>
+
+</html>
